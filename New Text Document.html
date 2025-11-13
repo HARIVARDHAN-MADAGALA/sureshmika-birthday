@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Happy Birthday 🌸</title>
+<style>
+  html,body{margin:0;padding:0;height:100%;overflow:hidden;font-family:"Poppins",sans-serif;}
+  video.bg{
+    position:fixed;top:0;left:0;width:100%;height:100%;
+    object-fit:cover;z-index:-2;filter:blur(2px) brightness(.8);
+  }
+  #overlay{position:fixed;top:0;left:0;width:100%;height:100%;z-index:1;touch-action:none;}
+  #overlay canvas{width:100%;height:100%;}
+  #content{
+    position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+    text-align:center;color:#fff;opacity:0;transition:opacity 2s ease;
+    text-shadow:0 0 10px rgba(0,0,0,.6);
+  }
+  h1{font-size:2.5rem;margin:0;}
+  p{font-size:1.2rem;max-width:600px;margin:auto;line-height:1.6;}
+  footer{position:absolute;bottom:10px;left:0;width:100%;text-align:center;color:#eee;font-size:.9rem;}
+  .spark{
+    position:fixed;width:6px;height:6px;background:#fff;border-radius:50%;
+    pointer-events:none;animation:spark 1s linear forwards;
+  }
+  @keyframes spark{
+    0%{transform:scale(1);opacity:1;}
+    100%{transform:translateY(-100px) scale(0);opacity:0;}
+  }
+</style>
+</head>
+<body>
+<video class="bg" autoplay muted loop playsinline>
+  <source src="bg.mp4" type="video/mp4">
+</video>
+
+<div id="overlay"><canvas id="fog"></canvas></div>
+
+<div id="content">
+  <h1>Happy Birthday, Sureshmika! 🌸</h1>
+  <p>
+    I wanted this to feel a little magical — so here’s your own secret sky.<br>
+    Swipe the mist away and let the music play.<br><br>
+    May this year bring light, calm, and a heart full of soft smiles. 💫<br><br>
+    — from Hari 💖
+  </p>
+</div>
+<footer>Swipe anywhere ✨</footer>
+
+<audio id="music" loop>
+  <source src="music.mp3" type="audio/mpeg">
+</audio>
+
+<script>
+const fog=document.getElementById("fog");
+const ctx=fog.getContext("2d");
+function resize(){
+  fog.width=window.innerWidth;
+  fog.height=window.innerHeight;
+  const grad=ctx.createLinearGradient(0,0,fog.width,fog.height);
+  grad.addColorStop(0,"#d5e6f2");
+  grad.addColorStop(1,"#f7d1df");
+  ctx.fillStyle=grad;
+  ctx.fillRect(0,0,fog.width,fog.height);
+  ctx.globalCompositeOperation="destination-out";
+}
+resize();window.addEventListener("resize",resize);
+
+let firstPlay=false, revealed=false;
+function erase(e){
+  const x=e.touches?e.touches[0].clientX:e.clientX;
+  const y=e.touches?e.touches[0].clientY:e.clientY;
+  for(let i=0;i<3;i++){
+    const s=document.createElement("div");
+    s.className="spark";
+    s.style.left=(x+Math.random()*20-10)+"px";
+    s.style.top=(y+Math.random()*20-10)+"px";
+    document.body.appendChild(s);
+    setTimeout(()=>s.remove(),1000);
+  }
+  ctx.beginPath();
+  ctx.arc(x,y,30,0,Math.PI*2);
+  ctx.fill();
+  if(!firstPlay){document.getElementById("music").play();firstPlay=true;}
+  if(!revealed){
+    const imgData=ctx.getImageData(0,0,fog.width,fog.height);
+    let clear=0;
+    for(let i=3;i<imgData.data.length;i+=4){if(imgData.data[i]<10)clear++;}
+    if(clear>imgData.data.length/20){ // ~5% cleared
+      document.getElementById("content").style.opacity=1;
+      revealed=true;
+    }
+  }
+}
+fog.addEventListener("touchmove",erase);
+fog.addEventListener("mousemove",e=>{if(e.buttons)erase(e);});
+</script>
+</body>
+</html>
